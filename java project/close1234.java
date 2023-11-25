@@ -156,9 +156,8 @@ class form12 extends JFrame implements ActionListener {
         JPanel panel = new JPanel(new GridBagLayout());
         setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 5, 5, 5); // Add some padding
+        gbc.insets = new Insets(5, 5, 5, 5);
 
-        // Add components with GridBagConstraints
         gbc.gridx = 0;
         gbc.gridy = 0;
         panel.add(l1, gbc);
@@ -716,13 +715,15 @@ class inside_staff extends JFrame implements ActionListener {
                 System.out.println("Matching user found.");
                 // If a matching user is found, open a new window
                 inside_loginstaff s1 = new inside_loginstaff();
+                s1.setTitle("Staff panal");
                 s1.setSize(300, 300);
                 s1.setVisible(true);
                 // Close the current window (if needed)
                 dispose();
             } else {
-                    JOptionPane.showMessageDialog(this, "Invalid username or password", "Login Error", JOptionPane.ERROR_MESSAGE);
-                }
+                JOptionPane.showMessageDialog(this, "Invalid username or password", "Login Error",
+                        JOptionPane.ERROR_MESSAGE);
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -734,18 +735,21 @@ class inside_loginstaff extends JFrame implements ActionListener {
     JButton nurses;
     JButton office;
     JButton Attendence;
+    JButton Pharmacy;
 
     public inside_loginstaff() {
         office = new JButton("Office");
         doctors = new JButton("Doctors");
         nurses = new JButton("Nurses");
         Attendence = new JButton("Attendence");
+        Pharmacy = new JButton("Pharmacy");
 
         Dimension buttonSize = new Dimension(250, 80);
         office.setPreferredSize(buttonSize);
         doctors.setPreferredSize(buttonSize);
         nurses.setPreferredSize(buttonSize);
         Attendence.setPreferredSize(buttonSize);
+        Pharmacy.setPreferredSize(buttonSize);
         setLayout(new FlowLayout(FlowLayout.CENTER));
 
         setLayout(new GridBagLayout());
@@ -757,11 +761,13 @@ class inside_loginstaff extends JFrame implements ActionListener {
         add(doctors, gbc);
         add(nurses, gbc);
         add(Attendence, gbc);
+        add(Pharmacy, gbc);
 
         office.addActionListener(this);
         doctors.addActionListener(this);
         nurses.addActionListener(this);
         Attendence.addActionListener(this);
+        Pharmacy.addActionListener(this);
 
     }
 
@@ -787,7 +793,279 @@ class inside_loginstaff extends JFrame implements ActionListener {
             AttendanceMark s1 = new AttendanceMark();
 
             s1.setVisible(true);
+        } else if (str.equals("Pharmacy")) {
+            Pharmacy s1 = new Pharmacy();
+            s1.setTitle("Pharmacy panel");
+            s1.setSize(300, 300);
+            s1.setVisible(true);
         }
+    }
+}
+
+class Pharmacy extends JFrame implements ActionListener {
+    public Pharmacy() {
+        JButton addStockButton = new JButton("Add Stock Report");
+        JButton sellMedicineButton = new JButton("Sell Medicine");
+
+        // Add action listeners to the buttons
+        addStockButton.addActionListener(this);
+        sellMedicineButton.addActionListener(this);
+
+        add(addStockButton);
+        add(sellMedicineButton);
+
+        setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        // Handle button clicks here
+        if (e.getActionCommand().equals("Add Stock Report")) {
+            addstocki s1 = new addstocki();
+            setTitle("Add Stock for Medicine");
+            s1.setSize(300, 300);
+            s1.setVisible(true);
+            System.out.println("Adding Stock Report");
+        } else if (e.getActionCommand().equals("Sell Medicine")) {
+ SellMedicine s1 = new SellMedicine();
+            setTitle("Add Stock for Medicine");
+            s1.setSize(300, 300);
+            s1.setVisible(true);
+            System.out.println("Selling Medicine");
+        }
+    }
+}
+
+class SellMedicine extends JFrame implements ActionListener{
+    private JTextField medicineNameField;
+    private JTextField quantityField;
+
+    private static final String JDBC_URL = "jdbc:mysql://localhost:3306/pharmacy_db";
+    private static final String USERNAME = "root";
+    private static final String PASSWORD = "Admin128@#";
+
+    private Connection con; // Connection object
+
+    public SellMedicine() {
+        
+
+        JLabel medicineLabel = new JLabel("Medicine Name:");
+        medicineNameField = new JTextField(20);
+
+        JLabel quantityLabel = new JLabel("Quantity:");
+        quantityField = new JTextField(10);
+
+        JButton sellButton = new JButton("Sell");
+        sellButton.addActionListener(this);
+
+        add(medicineLabel);
+        add(medicineNameField);
+        add(quantityLabel);
+        add(quantityField);
+        add(sellButton);
+
+        setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
+
+        // Establish the database connection
+        establishConnection();
+
+        // Display the frame
+        setVisible(true);
+    }
+
+    private void establishConnection() {
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            con = DriverManager.getConnection(JDBC_URL, USERNAME, PASSWORD);
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error connecting to the database.", "Error", JOptionPane.ERROR_MESSAGE);
+            System.exit(0);
+        }
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if (e.getActionCommand().equals("Sell")) {
+            sellMedicine();
+        }
+    }
+
+    private void sellMedicine() {
+        String medicineName = medicineNameField.getText();
+        String quantityText = quantityField.getText();
+
+        if (medicineName.isEmpty() || quantityText.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Please fill in all fields.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        try {
+            int quantityToSell = Integer.parseInt(quantityText);
+
+            if (medicineExists(medicineName)) {
+                int currentQuantity = getStockQuantity(medicineName);
+
+                if (currentQuantity >= quantityToSell) {
+                    updateStock(medicineName, -quantityToSell); // Update quantity (subtract sold quantity)
+                    System.out.println("Medicine Sold: " + medicineName + ", Quantity: " + quantityToSell);
+                    JOptionPane.showMessageDialog(this, "Medicine sold successfully.", "Success", JOptionPane.INFORMATION_MESSAGE);
+                } else {
+                    JOptionPane.showMessageDialog(this, "Not enough stock to sell.", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            } else {
+                JOptionPane.showMessageDialog(this, "Medicine not found in the database.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+
+            // Optionally, you can close the frame after selling medicine
+            dispose();
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "Please enter a valid quantity.", "Error", JOptionPane.ERROR_MESSAGE);
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error accessing the database.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private boolean medicineExists(String medicineName) throws SQLException {
+        String query = "SELECT * FROM medicines WHERE name = ?";
+        try (PreparedStatement preparedStatement = con.prepareStatement(query)) {
+            preparedStatement.setString(1, medicineName);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                return resultSet.next();
+            }
+        }
+    }
+
+    private int getStockQuantity(String medicineName) throws SQLException {
+        String query = "SELECT quantity FROM medicines WHERE name = ?";
+        try (PreparedStatement preparedStatement = con.prepareStatement(query)) {
+            preparedStatement.setString(1, medicineName);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    return resultSet.getInt("quantity");
+                }
+            }
+        }
+        return 0; // Return 0 if the medicine is not found (you might want to handle this differently)
+    }
+
+    private void updateStock(String medicineName, int quantity) throws SQLException {
+        String updateQuery = "UPDATE medicines SET quantity = quantity + ? WHERE name = ?";
+        try (PreparedStatement updateStatement = con.prepareStatement(updateQuery)) {
+            updateStatement.setInt(1, quantity);
+            updateStatement.setString(2, medicineName);
+            updateStatement.executeUpdate();
+        }
+        System.out.println("Stock Updated for Medicine: " + medicineName + ", New Quantity: " + quantity);
+    }
+}
+
+class addstocki extends JFrame implements ActionListener {
+     private JTextField medicineNameField;
+    private JTextField quantityField;
+
+private static final String JDBC_URL = "jdbc:mysql://localhost:3306/pharmacy_db";
+    private static final String USERNAME = "root";
+    private static final String PASSWORD = "Admin128@#";
+
+    public addstocki() {
+        JLabel medicineLabel = new JLabel("Medicine Name:");
+        medicineNameField = new JTextField(20);
+
+        JLabel quantityLabel = new JLabel("Quantity:");
+        quantityField = new JTextField(10);
+
+        JButton addButton = new JButton("Add Stock");
+        addButton.addActionListener(this);
+
+        add(medicineLabel);
+        add(medicineNameField);
+        add(quantityLabel);
+        add(quantityField);
+        add(addButton);
+
+        // Set layout manager
+        setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
+        
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        // Handle button click to add stock
+        if (e.getActionCommand().equals("Add Stock")) {
+            // Perform the logic to add stock
+            addStock();
+        }
+}
+
+private void addStock() {
+        String medicineName = medicineNameField.getText();
+        String quantityText = quantityField.getText();
+
+        if (medicineName.isEmpty() || quantityText.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Please fill in all fields.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        try {
+            int quantity = Integer.parseInt(quantityText);
+
+            // Check if the medicine already exists in the database
+            if (medicineExists(medicineName)) {
+                // If the medicine exists, update the quantity
+                updateStock(medicineName, quantity);
+            } else {
+                // If the medicine doesn't exist, insert a new record
+                addNewMedicine(medicineName, quantity);
+            }
+
+            // Optionally, you can close the frame after adding stock
+            dispose();
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "Please enter a valid quantity.", "Error", JOptionPane.ERROR_MESSAGE);
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error accessing the database.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private boolean medicineExists(String medicineName) throws SQLException {
+        try (Connection connection = DriverManager.getConnection(JDBC_URL, USERNAME, PASSWORD)) {
+            String query = "SELECT * FROM medicines WHERE name = ?";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                preparedStatement.setString(1, medicineName);
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    return resultSet.next(); // Returns true if the medicine exists in the database
+                }
+            }
+        }
+    }
+
+    private void updateStock(String medicineName, int quantity) throws SQLException {
+        try (Connection connection = DriverManager.getConnection(JDBC_URL, USERNAME, PASSWORD)) {
+            // Assuming you have a 'medicines' table with columns 'name' and 'quantity'
+            String updateQuery = "UPDATE medicines SET quantity = quantity + ? WHERE name = ?";
+            try (PreparedStatement updateStatement = connection.prepareStatement(updateQuery)) {
+                updateStatement.setInt(1, quantity);
+                updateStatement.setString(2, medicineName);
+                updateStatement.executeUpdate();
+            }
+        }
+        System.out.println("Stock Updated for Medicine: " + medicineName + ", New Quantity: " + quantity);
+    }
+
+    private void addNewMedicine(String medicineName, int quantity) throws SQLException {
+        try (Connection connection = DriverManager.getConnection(JDBC_URL, USERNAME, PASSWORD)) {
+            // Assuming you have a 'medicines' table with columns 'name' and 'quantity'
+            String insertQuery = "INSERT INTO medicines (name, quantity) VALUES (?, ?)";
+            try (PreparedStatement insertStatement = connection.prepareStatement(insertQuery)) {
+                insertStatement.setString(1, medicineName);
+                insertStatement.setInt(2, quantity);
+                insertStatement.executeUpdate();
+            }
+        }
+        System.out.println("New Medicine Added: " + medicineName + ", Quantity: " + quantity);
     }
 }
 
