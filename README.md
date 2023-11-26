@@ -4,7 +4,7 @@ Project Description: ----- The Hospital ERP Software is a vital information mana
 
 Key Modules: ---
 
-Patient Management
-Services Management
-Appointment Scheduling
-List of Staff This system plays a pivotal role in achieving predetermined hospital objectives, optimizing resources, and ensuring efficient healthcare delivery.
+1)Patient Management.
+2)Services Management.
+3)Appointment Scheduling.
+4)List of Staff This system plays a pivotal role in achieving predetermined hospital objectives, optimizing resources, and ensuring efficient healthcare delivery.
