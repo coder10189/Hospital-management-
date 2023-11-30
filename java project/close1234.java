@@ -1080,7 +1080,7 @@ class AttendanceMark extends JFrame implements ActionListener {
 
     public AttendanceMark() {
         setTitle("Attendance System");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        // setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE );
         setSize(800, 400);
 
         // Initialize the database connection
@@ -1335,8 +1335,8 @@ class inside_doctors extends JFrame implements ActionListener {
 
     public inside_doctors() {
         listDoctors = new JButton("List of Appointments");
-        adddocter = new JButton("Add new docter");
-        deletedocter = new JButton("Delete new docter");
+        adddocter = new JButton("Add A new docter");
+        deletedocter = new JButton("Delete A docter");
         setLayout(new FlowLayout(FlowLayout.CENTER));
 
         add(listDoctors);
@@ -1571,8 +1571,8 @@ class inside_nurses extends JFrame implements ActionListener {
 
     public inside_nurses() {
         listNurses = new JButton("List of Doctors's Appointments");
-        addNurses = new JButton("Add new Nurses");
-        DeleteNurses = new JButton("Delete new Nurses");
+        addNurses = new JButton("Add A new Nurses");
+        DeleteNurses = new JButton("Delete A Nurses");
         setLayout(new FlowLayout(FlowLayout.CENTER));
 
         add(listNurses);
